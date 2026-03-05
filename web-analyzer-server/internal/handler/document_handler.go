@@ -27,7 +27,7 @@ func (h *DocumentHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Decoded document: %+v", document)
-	processedDoc, err := h.service.ProcessDocument(&document)
+	processedDoc, err := h.service.ProcessDocument(r.Context(), &document)
 	if err != nil {
 		log.Printf("Error processing document: %v", err)
 		http.Error(w, "processing failed", http.StatusInternalServerError)

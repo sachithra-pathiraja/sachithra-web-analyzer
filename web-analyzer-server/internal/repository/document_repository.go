@@ -17,13 +17,12 @@ func NewDocumentRepository(db *sql.DB) *DocumentRepository {
 func (r *DocumentRepository) Save(e *model.Document) error {
 	log.Printf("Saving document to DB: %+v", e)
 	query := `
-	INSERT INTO document (url, body)
-	VALUES (?, ?))
+	INSERT INTO document (url)
+	VALUES (?)
 	`
 
 	_, err := r.db.Exec(query,
 		e.URL,
-		e.Body,
 	)
 
 	if err != nil {
