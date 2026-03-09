@@ -13,14 +13,16 @@ import (
 )
 
 type FetchService struct {
-	client *http.Client
-	logger *slog.Logger
+	client      *http.Client
+	logger      *slog.Logger
+	linkWorkers int
 }
 
-func NewFetchService(client *http.Client, logger *slog.Logger) *FetchService {
+func NewFetchService(client *http.Client, logger *slog.Logger, workers int) *FetchService {
 	return &FetchService{
-		client: client,
-		logger: logger,
+		client:      client,
+		logger:      logger,
+		linkWorkers: workers,
 	}
 }
 
@@ -89,7 +91,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 			"failed getting title and headings",
 		)
 	}
-	doc.Links, err = getLinks(docFromReader, doc.URL, s.client, s.logger)
+	doc.Links, err = getLinks(docFromReader, doc.URL, s.client, s.logger, s.linkWorkers)
 	if err != nil {
 		s.logger.Error("failed getting links", "error", err)
 
