@@ -2,11 +2,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"text/template"
+	"time"
 )
 
 type Request struct {
@@ -35,11 +40,44 @@ const page = `
 `
 
 func main() {
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/analyze", analyzeHandler)
 
-	log.Println("Client UI running on http://localhost:8090")
-	log.Fatal(http.ListenAndServe(":8090", nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("/analyze", analyzeHandler)
+
+	server := &http.Server{
+		Addr:         ":8090",
+		Handler:      mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
+	// ---- Start server in goroutine ----
+	go func() {
+		log.Println("Client UI running on http://localhost:8090")
+
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server failed: %v", err)
+		}
+	}()
+
+	// ---- Listen for shutdown signal ----
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	<-stop
+	log.Println("Shutdown signal received")
+
+	// ---- Graceful shutdown ----
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Graceful shutdown failed: %v", err)
+	}
+
+	log.Println("Server stopped gracefully")
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +86,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func analyzeHandler(w http.ResponseWriter, r *http.Request) {
+
 	url := r.FormValue("url")
 
 	reqBody := Request{
@@ -79,13 +118,16 @@ func analyzeHandler(w http.ResponseWriter, r *http.Request) {
 
 	var respObj interface{}
 	var beautified string
+
 	if err := json.Unmarshal(body, &respObj); err == nil {
+
 		pretty, err := json.MarshalIndent(respObj, "", "  ")
 		if err == nil {
 			beautified = string(pretty)
 		} else {
 			beautified = string(body)
 		}
+
 	} else {
 		beautified = string(body)
 	}
