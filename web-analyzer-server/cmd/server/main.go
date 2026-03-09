@@ -8,20 +8,23 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
+	"web-analyzer/internal/config"
 	"web-analyzer/internal/handler"
 	"web-analyzer/internal/service"
 )
 
 func main() {
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	cfg, err := config.Load("config.properties")
+	if err != nil {
+		logger.Error("config loading failed", "error", err)
+	}
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
 
-	fetchService := service.NewFetchService(client, logger)
+	fetchService := service.NewFetchService(client, logger, cfg.LinkWorkers)
 
 	analyzerHandler := handler.NewAnalyzerHandler(fetchService)
 
@@ -29,13 +32,13 @@ func main() {
 	mux.HandleFunc("/analyzer", analyzerHandler.Analyze)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + cfg.ServerPort,
 		Handler: mux,
 	}
 
 	// ---- Start Server ----
 	go func() {
-		logger.Info("server starting", "port", 8080)
+		logger.Info("server starting", "port", cfg.ServerPort)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("server failed", "error", err)

@@ -17,6 +17,7 @@ func getLinks(
 	targetURL string,
 	client *http.Client,
 	logger *slog.Logger,
+	workerCount int,
 ) ([]model.Link, error) {
 
 	baseURL, err := url.Parse(targetURL)
@@ -43,9 +44,9 @@ func getLinks(
 	var wg sync.WaitGroup
 
 	jobs := make(chan string)
-
-	workerCount := 5
-
+	if workerCount <= 0 {
+		workerCount = 5
+	}
 	for w := 0; w < workerCount; w++ {
 
 		go func() {
