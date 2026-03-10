@@ -41,8 +41,8 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 	if err != nil {
 		s.logger.Error("failed fetching document", "url", doc.URL, "error", err)
 		return nil, apierror.New(
-			apierror.ErrFetchFailed,
-			"failed to fetch document",
+			apierror.ErrInvalidURL,
+			"invalid url provided",
 		)
 	}
 	defer resp.Body.Close()

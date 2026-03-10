@@ -43,12 +43,11 @@ func getLinks(
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	jobs := make(chan string)
+	jobs := make(chan string, workerCount*10)
 	if workerCount <= 0 {
 		workerCount = 5
 	}
 	for w := 0; w < workerCount; w++ {
-
 		go func() {
 			for urlStr := range jobs {
 
