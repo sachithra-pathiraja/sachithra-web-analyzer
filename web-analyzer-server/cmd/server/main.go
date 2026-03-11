@@ -10,6 +10,7 @@ import (
 	"time"
 	"web-analyzer/internal/config"
 	"web-analyzer/internal/handler"
+	"web-analyzer/internal/middleware"
 	"web-analyzer/internal/service"
 )
 
@@ -31,9 +32,15 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/analyzer", analyzerHandler.Analyze)
 
+	handlerWithMiddleware := middleware.Chain(
+		mux,
+		middleware.Recovery(logger),
+		middleware.Logging(logger),
+	)
+
 	server := &http.Server{
 		Addr:    ":" + cfg.ServerPort,
-		Handler: mux,
+		Handler: handlerWithMiddleware,
 	}
 
 	// ---- Start Server ----

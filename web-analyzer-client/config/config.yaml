@@ -1,0 +1,5 @@
+server:
+  port: 8090
+
+analyzer:
+  url: http://localhost:8080/analyzer

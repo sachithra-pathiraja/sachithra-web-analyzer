@@ -25,7 +25,7 @@ func (h *AnalyzerHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&doc); err != nil {
 		writeError(w, http.StatusBadRequest,
 			apierror.ErrInvalidURL,
-			"invalid request body")
+			"Invalid request body")
 		return
 	}
 
@@ -44,7 +44,7 @@ func (h *AnalyzerHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 
 		writeError(w, http.StatusInternalServerError,
 			apierror.ErrInternal,
-			"internal server error")
+			"Internal server error")
 		return
 	}
 

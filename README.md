@@ -6,7 +6,7 @@ How to start the server and client
 2. Run the following commands in order
 
 cd web-analyzer-client 
-go run main.go 
+go run cmd/server/main.go
 
 3. Open another terminal
 4. Run the following commands in order
@@ -57,34 +57,13 @@ Things I can add later
 8. Health check endpoint
 
 
-
-"bytes"
-"context"
-"encoding/json"
-"io"
-"log/slog"
-"net/http"
-"os"
-"os/signal"
-"syscall"
-"text/template"
-"time"
-"encoding/json"
-"errors"
-"github.com/PuerkitoBio/goquery"
-"golang.org/x/net/html"
-"net/url"
-"strings"
-"sync"
-
-
 Architectural Diagram
 
 Three tier arcitecture diagram: three_tier_architecture.png (This can be found in the same level as README.md in this repo)
 
 Discriptive architecture diagram: 
 
-                   ┌──────────────────────────┐
+                                     ┌──────────────────────────┐
                    │        User Browser      │
                    │   (Web Analyzer Client)  │
                    └─────────────┬────────────┘
@@ -106,7 +85,26 @@ Discriptive architecture diagram:
                     │      Analyzer API       │
                     │        (Port 8080)      │
                     │                         │
-                    │  Handler Layer         │
+                    │      HTTP Server        │
+                    └─────────────┬───────────┘
+                                  │
+                                  ▼
+                    ┌─────────────────────────┐
+                    │       Middleware        │
+                    │                         │
+                    │  - Logging Middleware   │
+                    │    (slog request logs)  │
+                    │                         │
+                    │  - Recovery Middleware  │
+                    │    (panic protection)   │
+                    │                         │
+                    │  - Request Timing       │
+                    └─────────────┬───────────┘
+                                  │
+                                  ▼
+                    ┌─────────────────────────┐
+                    │       Handler Layer     │
+                    │                         │
                     │  - Request Validation   │
                     │  - Error Mapping        │
                     │  - JSON Responses       │
@@ -128,12 +126,12 @@ Discriptive architecture diagram:
                                   │
                                   ▼
                 ┌─────────────────────────────────┐
-                │       HTML Processing           │
+                │        HTML Processing          │
                 │                                 │
-                │ getHTMLVersion()                │
-                │ getTitleAndHeadings()           │
-                │ getLinks()                      │
-                │ getHasLogin()                   │
+                │  getHTMLVersion()               │
+                │  getTitleAndHeadings()          │
+                │  getLinks()                     │
+                │  getHasLogin()                  │
                 └─────────────┬───────────────────┘
                               │
                               ▼
@@ -156,8 +154,3 @@ Discriptive architecture diagram:
                 │  Link accessibility     │
                 │  validation (HEAD)      │
                 └─────────────────────────┘
-
-
-
-
-

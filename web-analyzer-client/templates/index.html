@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Web Analyzer</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Web Analyzer</h1>
+
+<p class="description">
+Analyze the structure of any webpage by entering its URL.  
+This tool inspects the HTML version, headings structure, link distribution, and detects whether login forms exist.
+</p>
+
+<form method="POST" action="/analyze">
+   <input 
+type="text" 
+name="url" 
+placeholder="Paste URL here..." 
+class="url-input"
+required>
+    <button type="submit">Analyze</button>
+</form>
+
+{{if .Error}}
+<div class="error-card">
+<p>{{.Error}}</p>
+</div>
+{{end}}
+
+{{if .Result}}
+
+<div class="results">
+
+<div class="card">
+<h3>Page Title</h3>
+<p>{{.Result.Title}}</p>
+</div>
+
+<div class="card">
+<h3>Page Info</h3>
+
+<div class="sub-card-container">
+
+<div class="sub-card">
+<p>HTML Version</p>
+<p>{{.Result.HTMLVersion}}</p>
+</div>
+
+<div class="sub-card">
+<p>Login Form</p>
+<p>{{if .Result.HasLoginForm}}Present{{else}}Not Present{{end}}</p>
+</div>
+
+</div>
+</div>
+
+<div class="card">
+<h3>Headings</h3>
+
+<div class="sub-card-grid">
+{{range .Result.Headings}}
+<div class="sub-card">
+<p>Level {{.Level}}</p>
+<p>{{.Count}}</p>
+</div>
+{{end}}
+</div>
+
+</div>
+
+
+<div class="card">
+<h3>Links</h3>
+
+<div class="sub-card-grid">
+{{range .Result.Links}}
+<div class="sub-card">
+<p>{{.LinkType}}</p>
+<p>{{.Count}}</p>
+</div>
+{{end}}
+</div>
+
+</div>
+
+</div>
+
+{{end}}
+
+</div>
+
+</body>
+</html>
