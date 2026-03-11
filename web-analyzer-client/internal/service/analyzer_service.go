@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -25,26 +26,42 @@ func (s *AnalyzerService) CallAnalyzer(url string) (*model.Response, error) {
 		URL: url,
 	}
 
-	jsonData, _ := json.Marshal(reqBody)
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := http.Post(
 		s.analyzerURL,
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	// ❗ If API returned an error
+	if resp.StatusCode != http.StatusOK {
 
-	body, _ := io.ReadAll(resp.Body)
+		var apiErr model.APIError
 
+		if err := json.Unmarshal(body, &apiErr); err != nil {
+			return nil, fmt.Errorf("server error")
+		}
+
+		return nil, fmt.Errorf(apiErr.Message)
+	}
+
+	// ✅ Normal success response
 	var result model.Response
 
-	err = json.Unmarshal(body, &result)
-	if err != nil {
+	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 

@@ -101,6 +101,5 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		)
 	}
 	doc.HasLoginForm = getHasLogin(docFromReader)
-
 	return doc, nil
 }

@@ -22,11 +22,16 @@ func AnalyzeHandler(tmpl *template.Template, svc *service.AnalyzerService) http.
 
 		result, err := svc.CallAnalyzer(url)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		data := map[string]interface{}{
+			"URL": url,
 		}
 
-		tmpl.Execute(w, result)
+		if err != nil {
+			data["Error"] = err.Error()
+		} else {
+			data["Result"] = result
+		}
+
+		tmpl.Execute(w, data)
 	}
 }

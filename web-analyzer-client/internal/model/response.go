@@ -21,3 +21,8 @@ type Link struct {
 	LinkType string `json:"linkType"`
 	Count    int    `json:"count"`
 }
+
+type APIError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}

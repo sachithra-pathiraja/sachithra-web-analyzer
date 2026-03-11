@@ -128,8 +128,8 @@ func getLinks(
 	)
 
 	return []model.Link{
-		{LinkType: "internal", Count: stats.internal},
-		{LinkType: "external", Count: stats.external},
-		{LinkType: "inaccessible", Count: stats.inaccessible},
+		{LinkType: "Internal", Count: stats.internal},
+		{LinkType: "External", Count: stats.external},
+		{LinkType: "Inaccessible", Count: stats.inaccessible},
 	}, nil
 }

@@ -2,8 +2,8 @@
 <html>
 
 <head>
-<title>Web Analyzer</title>
-<link rel="stylesheet" href="/static/css/styles.css">
+    <title>Web Analyzer</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 
 <body>
@@ -12,45 +12,81 @@
 
 <h1>Web Analyzer</h1>
 
-<form method="POST" action="/analyze" class="form">
-<input type="text" name="url" placeholder="Paste URL here..." required>
-<button type="submit">Analyze</button>
+<p class="description">
+Analyze the structure of any webpage by entering its URL.  
+This tool inspects the HTML version, headings structure, link distribution, and detects whether login forms exist.
+</p>
+
+<form method="POST" action="/analyze">
+   <input 
+type="text" 
+name="url" 
+placeholder="Paste URL here..." 
+class="url-input"
+required>
+    <button type="submit">Analyze</button>
 </form>
 
-{{if .}}
+{{if .Error}}
+<div class="error-card">
+<p>{{.Error}}</p>
+</div>
+{{end}}
+
+{{if .Result}}
+
+<div class="results">
 
 <div class="card">
-
-<h2>{{.Title}}</h2>
-
-<div class="section">
-<span class="label">HTML Version:</span>
-<span class="value">{{.HTMLVersion}}</span>
+<h3>Page Title</h3>
+<p>{{.Result.Title}}</p>
 </div>
 
-<div class="section">
+<div class="card">
+<h3>Page Info</h3>
+
+<div class="sub-card-container">
+
+<div class="sub-card">
+<p>HTML Version</p>
+<p>{{.Result.HTMLVersion}}</p>
+</div>
+
+<div class="sub-card">
+<p>Login Form</p>
+<p>{{if .Result.HasLoginForm}}Present{{else}}Not Present{{end}}</p>
+</div>
+
+</div>
+</div>
+
+<div class="card">
 <h3>Headings</h3>
-<ul>
-{{range .Headings}}
-<li>Level: {{.Level}} — {{.Count}}</li>
+
+<div class="sub-card-grid">
+{{range .Result.Headings}}
+<div class="sub-card">
+<p>Level {{.Level}}</p>
+<p>{{.Count}}</p>
+</div>
 {{end}}
-</ul>
 </div>
 
-<div class="section">
+</div>
+
+
+<div class="card">
 <h3>Links</h3>
-<ul>
-{{range .Links}}
-<li style="text-transform: capitalize;">{{.LinkType}} — {{.Count}}</li>
+
+<div class="sub-card-grid">
+{{range .Result.Links}}
+<div class="sub-card">
+<p>{{.LinkType}}</p>
+<p>{{.Count}}</p>
+</div>
 {{end}}
-</ul>
 </div>
 
-<div class="section">
-<span class="label">Login Form:</span>
-<span class="value">
-{{if .HasLoginForm}}Present{{else}}Not Present{{end}}
-</span>
 </div>
 
 </div>
