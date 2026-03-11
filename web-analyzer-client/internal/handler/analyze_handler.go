@@ -17,6 +17,10 @@ func HomeHandler(tmpl *template.Template) http.HandlerFunc {
 func AnalyzeHandler(tmpl *template.Template, svc *service.AnalyzerService) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 
 		url := r.FormValue("url")
 

@@ -13,18 +13,22 @@
 <h1>Web Analyzer</h1>
 
 <p class="description">
-Analyze the structure of any webpage by entering its URL.  
-This tool inspects the HTML version, headings structure, link distribution, and detects whether login forms exist.
+Analyze the structure of any webpage by entering its URL.
+This tool inspects the HTML version, headings structure, link distribution,
+and detects whether login forms exist.
 </p>
 
-<form method="POST" action="/analyze">
-   <input 
-type="text" 
-name="url" 
-placeholder="Paste URL here..." 
+<form method="POST" action="/analyze" class="search-form">
+
+<input
+type="text"
+name="url"
+placeholder="Paste URL here..."
 class="url-input"
 required>
-    <button type="submit">Analyze</button>
+
+<button type="submit">Analyze</button>
+
 </form>
 
 {{if .Error}}
@@ -39,7 +43,7 @@ required>
 
 <div class="card">
 <h3>Page Title</h3>
-<p>{{.Result.Title}}</p>
+<p class="title-value">{{.Result.Title}}</p>
 </div>
 
 <div class="card">
@@ -48,13 +52,13 @@ required>
 <div class="sub-card-container">
 
 <div class="sub-card">
-<p>HTML Version</p>
-<p>{{.Result.HTMLVersion}}</p>
+<p class="sub-label">HTML Version</p>
+<p class="sub-value">{{.Result.HTMLVersion}}</p>
 </div>
 
 <div class="sub-card">
-<p>Login Form</p>
-<p>{{if .Result.HasLoginForm}}Present{{else}}Not Present{{end}}</p>
+<p class="sub-label">Login Form</p>
+<p class="sub-value">{{if .Result.HasLoginForm}}Present{{else}}Not Present{{end}}</p>
 </div>
 
 </div>
@@ -64,27 +68,30 @@ required>
 <h3>Headings</h3>
 
 <div class="sub-card-grid">
+
 {{range .Result.Headings}}
 <div class="sub-card">
-<p>Level {{.Level}}</p>
-<p>{{.Count}}</p>
+<p class="sub-label">Level {{.Level}}</p>
+<p class="sub-value">{{.Count}}</p>
 </div>
 {{end}}
-</div>
 
 </div>
 
+</div>
 
 <div class="card">
 <h3>Links</h3>
 
 <div class="sub-card-grid">
+
 {{range .Result.Links}}
 <div class="sub-card">
-<p>{{.LinkType}}</p>
-<p>{{.Count}}</p>
+<p class="sub-label">{{.LinkType}}</p>
+<p class="sub-value">{{.Count}}</p>
 </div>
 {{end}}
+
 </div>
 
 </div>
