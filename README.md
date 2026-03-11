@@ -6,7 +6,7 @@ How to start the server and client
 2. Run the following commands in order
 
 cd web-analyzer-client 
-go run cmd/server/main.go
+go run cmd/client/client.go
 
 3. Open another terminal
 4. Run the following commands in order
