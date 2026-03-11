@@ -33,7 +33,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("invalid url", "url", doc.URL, "error", err)
 		return nil, apierror.New(
 			apierror.ErrInvalidURL,
-			"invalid url provided",
+			"Invalid url provided",
 		)
 	}
 
@@ -42,7 +42,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed fetching document", "url", doc.URL, "error", err)
 		return nil, apierror.New(
 			apierror.ErrInvalidURL,
-			"invalid url provided",
+			"Invalid url provided",
 		)
 	}
 	defer resp.Body.Close()
@@ -53,7 +53,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 
 		return nil, apierror.New(
 			apierror.ErrInternal,
-			"failed reading response body",
+			"Failed reading response body",
 		)
 	}
 
@@ -64,7 +64,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 
 		return nil, apierror.New(
 			apierror.ErrInternal,
-			"failed getting HTML version",
+			"Failed getting HTML version",
 		)
 	}
 
@@ -79,7 +79,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 
 		return nil, apierror.New(
 			apierror.ErrParseFailed,
-			"failed parsing html document",
+			"Failed parsing html document",
 		)
 	}
 	doc.Title, doc.Headings, err = getTitleAndHeadings(docFromReader, s.logger)
@@ -88,7 +88,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 
 		return nil, apierror.New(
 			apierror.ErrInternal,
-			"failed getting title and headings",
+			"Failed getting title and headings",
 		)
 	}
 	doc.Links, err = getLinks(docFromReader, doc.URL, s.client, s.logger, s.linkWorkers)
@@ -97,7 +97,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 
 		return nil, apierror.New(
 			apierror.ErrInternal,
-			"failed getting links",
+			"Failed getting links",
 		)
 	}
 	doc.HasLoginForm = getHasLogin(docFromReader)
