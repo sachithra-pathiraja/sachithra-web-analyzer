@@ -33,7 +33,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("invalid url", "url", doc.URL, "error", err)
 		return nil, apierror.New(
 			apierror.ErrInvalidURL,
-			"Invalid url provided",
+			"Invalid URL provided",
 		)
 	}
 
@@ -42,7 +42,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed fetching document", "url", doc.URL, "error", err)
 		return nil, apierror.New(
 			apierror.ErrInvalidURL,
-			"Invalid url provided",
+			"Invalid URL provided",
 		)
 	}
 	defer resp.Body.Close()
