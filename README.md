@@ -79,6 +79,7 @@ External libraries used:
 
 - `github.com/PuerkitoBio/goquery`
 - `golang.org/x/net/html`
+- `gopkg.in/yaml.v3`
 
 Standard library packages used include (not exhaustive):
 
@@ -96,6 +97,7 @@ Normally not required (Go will pull deps automatically), but you can run:
 ```bash
 go get github.com/PuerkitoBio/goquery
 go get golang.org/x/net/html
+go get gopkg.in/yaml.v3
 ```
 
 ---
