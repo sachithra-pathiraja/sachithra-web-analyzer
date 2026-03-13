@@ -25,15 +25,23 @@ type="text"
 name="url"
 placeholder="Paste URL here..."
 class="url-input"
+value="{{if .Error}}{{.Error.URL}}{{else}}{{if .Result}}{{.Result.URL}}{{end}}{{end}}"
 required>
 
+
 <button type="submit">Analyze</button>
+{{if .Pending}}
+<span id="pending" class="pending" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <span class="pending-text">Analyzing…</span>
+</span>
+{{end}}
 
 </form>
 
 {{if .Error}}
 <div class="error-card">
-<p>{{.Error}}</p>
+<p>{{.Error.Message}}</p>
 </div>
 {{end}}
 
@@ -101,6 +109,24 @@ required>
 {{end}}
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.querySelector('form.search-form');
+  if (!form) return;
+
+  var pending = document.getElementById('pending');
+  var submitBtn = form.querySelector('button[type="submit"]');
+
+  form.addEventListener('submit', function () {
+    if (pending) {
+      pending.classList.add('show');
+      pending.setAttribute('aria-hidden', 'false');
+    }
+    if (submitBtn) submitBtn.disabled = true;
+  });
+});
+</script>
 
 </body>
 </html>

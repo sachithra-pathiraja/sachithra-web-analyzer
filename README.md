@@ -1,156 +1,206 @@
 # sachithra-web-analyzer
 
-How to start the server and client
+A simple **web page analyzer** built with Go, split into two components:
 
-1. Open a new terminal
-2. Run the following commands in order
+- **Client web app (UI)**: serves an HTML page where you paste a URL and submit it for analysis.
+- **Analyzer API (server)**: fetches the target page, parses HTML, analyzes structure, and validates links concurrently.
 
-cd web-analyzer-client 
+---
+
+## Prerequisites
+
+- Go installed (recommended: Go 1.20+)
+- Internet access (the analyzer fetches external pages)
+- Ports available:
+  - Client UI: **8090**
+  - Analyzer API: **8080**
+
+> Note: `go.mod` and `go.sum` are committed, so dependencies should be fetched automatically by Go when you run the apps.
+
+---
+
+## Project Structure
+
+- `web-analyzer-client/` — UI web server (HTML form + forwards request to API)
+- `web-analyzer-server/` — Analyzer API (fetch + parse + analyze + link checking)
+
+---
+
+## How to Run (Client + Server)
+
+### 1) Start the client (UI)
+
+Open a terminal and run:
+
+```bash
+cd web-analyzer-client
 go run cmd/client/client.go
+```
 
-3. Open another terminal
-4. Run the following commands in order
+This starts the client web server on **http://localhost:8090**.
 
-cd web-analyzer-server 
+### 2) Start the analyzer server (API)
+
+Open a second terminal and run:
+
+```bash
+cd web-analyzer-server
 go run cmd/server/main.go
+```
 
-5. Go to your browser and load the following URL
+This starts the analyzer API on **http://localhost:8080**.
 
-http://localhost:8090/analyze
+### 3) Use the app
 
-6. Paste the URL of the webpage you need to analyze on the only textfield in the page and press Analyze
-7. Since the go.mod and go.sum files commited to the repo you may not need to install any of the libraries. but all the used libraries are as following. you can use following commands in a case you need to install external library.
+Open your browser and go to:
 
-go get <ex library>
+- **http://localhost:8090/analyze**
 
-"bytes"
-"context"
-"encoding/json"
-"io"
-"log/slog"
-"net/http"
-"os"
-"os/signal"
-"syscall"
-"text/template"
-"time"
-"encoding/json"
-"errors"
-"github.com/PuerkitoBio/goquery"
-"golang.org/x/net/html"
-"net/url"
-"strings"
-"sync"
+Paste the URL of the webpage you want to analyze into the text field and click **Analyze**.
 
+---
 
-8. If your response time is very high you can adjust the number of workers used in analyzing links in the config.properties file.
+## Configuration
 
-Things I can add later
+### Worker count (link checking)
 
-1. Throttling - I can add throttling to manage the rate of api calls.
-2. Intigrate Docker.
-3. Adding unit testing.
-4. TLS handshake between client and the server
-5. Caching mechanism
-6. Add request tracing
-7. Retry mechanism
-8. Health check endpoint
+The analyzer validates links using a **worker pool** (concurrent HEAD requests).  
+If response time is high, tune the number of workers in:
 
+- `config.properties`
 
-Architectural Diagram
+Increase workers to speed up link validation, decrease to reduce load / throttling risk.
 
-Three tier arcitecture diagram: three_tier_architecture.png (This can be found in the same level as README.md in this repo)
+---
 
-Discriptive architecture diagram: 
+## Dependencies
 
-                                     ┌──────────────────────────┐
-                   │        User Browser      │
-                   │   (Web Analyzer Client)  │
-                   └─────────────┬────────────┘
-                                 │
-                                 │ HTTP POST /analyze
-                                 ▼
-                    ┌─────────────────────────┐
-                    │     Client Web Server   │
-                    │        (Port 8090)      │
-                    │                         │
-                    │  - HTML Template UI     │
-                    │  - URL Form Input       │
-                    │  - Sends API Request    │
-                    └─────────────┬───────────┘
-                                  │
-                                  │ HTTP POST /analyzer
-                                  ▼
-                    ┌─────────────────────────┐
-                    │      Analyzer API       │
-                    │        (Port 8080)      │
-                    │                         │
-                    │      HTTP Server        │
-                    └─────────────┬───────────┘
-                                  │
-                                  ▼
-                    ┌─────────────────────────┐
-                    │       Middleware        │
-                    │                         │
-                    │  - Logging Middleware   │
-                    │    (slog request logs)  │
-                    │                         │
-                    │  - Recovery Middleware  │
-                    │    (panic protection)   │
-                    │                         │
-                    │  - Request Timing       │
-                    └─────────────┬───────────┘
-                                  │
-                                  ▼
-                    ┌─────────────────────────┐
-                    │       Handler Layer     │
-                    │                         │
-                    │  - Request Validation   │
-                    │  - Error Mapping        │
-                    │  - JSON Responses       │
-                    └─────────────┬───────────┘
-                                  │
-                                  ▼
-                    ┌─────────────────────────┐
-                    │      FetchService       │
-                    │                         │
-                    │  Responsibilities:      │
-                    │  - Fetch HTML page      │
-                    │  - Parse content        │
-                    │  - Analyze structure    │
-                    │                         │
-                    │  Uses:                  │
-                    │  - http.Client          │
-                    │  - slog Logger          │
-                    └─────────────┬───────────┘
-                                  │
-                                  ▼
-                ┌─────────────────────────────────┐
-                │        HTML Processing          │
-                │                                 │
-                │  getHTMLVersion()               │
-                │  getTitleAndHeadings()          │
-                │  getLinks()                     │
-                │  getHasLogin()                  │
-                └─────────────┬───────────────────┘
-                              │
-                              ▼
-              ┌─────────────────────────────────┐
-              │         Worker Pool              │
-              │                                 │
-              │ Configurable Workers            │
-              │ (from config.properties)        │
-              │                                 │
-              │  Worker 1 ── HEAD request ──►   │
-              │  Worker 2 ── HEAD request ──►   │
-              │  Worker 3 ── HEAD request ──►   │
-              │  Worker N ── HEAD request ──►   │
-              └─────────────┬───────────────────┘
-                            │
-                            ▼
-                ┌─────────────────────────┐
-                │     External Websites   │
-                │                         │
-                │  Link accessibility     │
-                │  validation (HEAD)      │
-                └─────────────────────────┘
+External libraries used:
+
+- `github.com/PuerkitoBio/goquery`
+- `golang.org/x/net/html`
+- `gopkg.in/yaml.v3`
+
+Standard library packages used include (not exhaustive):
+
+- `net/http`, `net/url`
+- `context`, `time`
+- `encoding/json`
+- `sync`
+- `text/template`
+- `log/slog`
+
+### Installing (if you ever need to)
+
+Normally not required (Go will pull deps automatically), but you can run:
+
+```bash
+go get github.com/PuerkitoBio/goquery
+go get golang.org/x/net/html
+go get gopkg.in/yaml.v3
+```
+
+---
+
+## Architecture
+
+### Three-tier architecture diagram
+
+See: `three_tier_architecture.png` (located next to this README).
+
+### Descriptive architecture diagram
+
+```text
+┌──────────────────────────┐
+│        User Browser      │
+│   (Web Analyzer Client)  │
+└─────────────┬────────────┘
+              │  HTTP GET /analyze
+              ▼
+┌─────────────────────────┐
+│   Client Web Server      │
+│   (Port 8090)            │
+│                         │
+│ - HTML Template UI       │
+│ - URL Form Input         │
+│ - Sends API Request      │
+└─────────────┬───────────┘
+              │  HTTP POST /analyzer
+              ▼
+┌─────────────────────────┐
+│     Analyzer API         │
+│     (Port 8080)          │
+│                         │
+│ - HTTP Server            │
+└─────────────┬───────────┘
+              ▼
+┌─────────────────────────┐
+│       Middleware         │
+│ - Logging (slog)         │
+│ - Recovery (panic guard) │
+│ - Request timing         │
+└─────────────┬───────────┘
+              ▼
+┌─────────────────────────┐
+│     Handler Layer        │
+│ - Validation             │
+│ - Error mapping          │
+│ - JSON responses         │
+└─────────────┬───────────┘
+              ▼
+┌─────────────────────────┐
+│     FetchService         │
+│ - Fetch HTML page        │
+│ - Parse content          │
+│ - Analyze structure      │
+└─────────────┬───────────┘
+              ▼
+┌─────────────────────────────────┐
+│        HTML Processing          │
+│ - getHTMLVersion()              │
+│ - getTitleAndHeadings()         │
+│ - getLinks()                    │
+│ - getHasLogin()                 │
+└─────────────┬───────────────────┘
+              ▼
+┌─────────────────────────────────┐
+│          Worker Pool            │
+│ - Configurable workers          │
+│ - HEAD requests for link checks │
+└─────────────┬───────────────────┘
+              ▼
+┌─────────────────────────┐
+│    External Websites     │
+│ - Link accessibility     │
+│   validation (HEAD)      │
+└─────────────────────────┘
+```
+
+---
+
+## Possible Future Improvements
+
+- Throttling (rate-limit external calls)
+- Docker support
+- Unit tests
+- TLS between client and server
+- Caching
+- Request tracing
+- Retry mechanism
+- Health check endpoint (e.g., `/healthz`)
+
+---
+
+## Troubleshooting
+
+### Port already in use
+If you see an error like “address already in use”, either:
+- stop the process currently using ports **8080** or **8090**, or
+- change the ports in the code/config (depending on how your project is set up).
+
+### Slow responses
+If the page has many links, link checking can take time.
+- Reduce/increase worker count in `config.properties`
+- Try analyzing a simpler page to confirm everything is working
+
+---

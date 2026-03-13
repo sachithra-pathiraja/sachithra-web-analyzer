@@ -34,6 +34,7 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		return nil, apierror.New(
 			apierror.ErrInvalidURL,
 			"Invalid URL provided",
+			doc.URL,
 		)
 	}
 
@@ -41,8 +42,9 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 	if err != nil {
 		s.logger.Error("failed fetching document", "url", doc.URL, "error", err)
 		return nil, apierror.New(
-			apierror.ErrInvalidURL,
+			apierror.ErrFetchFailed,
 			"Invalid URL provided",
+			doc.URL,
 		)
 	}
 	defer resp.Body.Close()
@@ -52,8 +54,9 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed reading response body", "error", err)
 
 		return nil, apierror.New(
-			apierror.ErrInternal,
+			apierror.ErrReadFailed,
 			"Failed reading response body",
+			doc.URL,
 		)
 	}
 
@@ -63,8 +66,9 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed getting HTML version", "error", err)
 
 		return nil, apierror.New(
-			apierror.ErrInternal,
+			apierror.ErrHTMLParseFailed,
 			"Failed getting HTML version",
+			doc.URL,
 		)
 	}
 
@@ -78,8 +82,9 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed parsing html", "error", err)
 
 		return nil, apierror.New(
-			apierror.ErrParseFailed,
+			apierror.ErrHTMLParseFailed,
 			"Failed parsing html document",
+			doc.URL,
 		)
 	}
 	doc.Title, doc.Headings, err = getTitleAndHeadings(docFromReader, s.logger)
@@ -87,8 +92,9 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed getting title and headings", "error", err)
 
 		return nil, apierror.New(
-			apierror.ErrInternal,
+			apierror.ErrExtractionFailed,
 			"Failed getting title and headings",
+			doc.URL,
 		)
 	}
 	doc.Links, err = getLinks(docFromReader, doc.URL, s.client, s.logger, s.linkWorkers)
@@ -96,8 +102,9 @@ func (s *FetchService) ProcessDocument(ctx context.Context, doc *model.Document)
 		s.logger.Error("failed getting links", "error", err)
 
 		return nil, apierror.New(
-			apierror.ErrInternal,
+			apierror.ErrLinkAnalysisFailed,
 			"Failed getting links",
+			doc.URL,
 		)
 	}
 	doc.HasLoginForm = getHasLogin(docFromReader)

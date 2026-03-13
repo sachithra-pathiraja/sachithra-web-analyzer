@@ -51,6 +51,7 @@ func getHTMLVersion(r io.Reader, logger *slog.Logger) (string, error) {
 				return "", apierror.New(
 					apierror.ErrParseFailed,
 					"failed parsing html doctype",
+					"",
 				)
 			}
 
