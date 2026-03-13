@@ -31,7 +31,7 @@ func AnalyzeHandler(tmpl *template.Template, svc *service.AnalyzerService) http.
 		}
 
 		if err != nil {
-			data["Error"] = err.Error()
+			data["Error"] = err
 		} else {
 			data["Result"] = result
 		}

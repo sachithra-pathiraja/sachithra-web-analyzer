@@ -10,6 +10,7 @@ type Response struct {
 	Headings     []Heading `json:"headings"`
 	Links        []Link    `json:"links"`
 	HasLoginForm bool      `json:"hasLoginForm"`
+	URL          string    `json:"url"`
 }
 
 type Heading struct {
@@ -25,4 +26,5 @@ type Link struct {
 type APIError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
+	URL     string `json:"url"`
 }

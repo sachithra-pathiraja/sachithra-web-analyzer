@@ -76,10 +76,23 @@ func mapErrorToHTTP(code string) int {
 	case apierror.ErrInvalidURL:
 		return http.StatusBadRequest
 
-	case apierror.ErrFetchFailed:
+	// Upstream / remote failures
+	case apierror.ErrFetchFailed,
+		apierror.ErrReadFailed,
+		apierror.ErrRequestFailed,
+		apierror.ErrRequestCreation,
+		apierror.ErrInaccessibleLink,
+		apierror.ErrLinkAnalysisFailed:
 		return http.StatusBadGateway
 
-	case apierror.ErrParseFailed:
+	// Timeouts / cancellations
+	case apierror.ErrRequestTimeout:
+		return http.StatusGatewayTimeout
+
+	// Parse / extraction issues
+	case apierror.ErrHTMLParseFailed,
+		apierror.ErrExtractionFailed,
+		apierror.ErrParseFailed:
 		return http.StatusUnprocessableEntity
 
 	default:
