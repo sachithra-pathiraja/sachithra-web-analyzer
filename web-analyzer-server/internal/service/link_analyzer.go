@@ -46,6 +46,7 @@ func getLinks(
 		mu    sync.Mutex
 	)
 
+	seen := make(map[string]struct{})
 	var urls []string
 
 	doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
@@ -69,7 +70,18 @@ func getLinks(
 		}
 
 		absoluteURL := baseURL.ResolveReference(parsedHref)
+
+		// remove fragments (#section) before deduplication
+		absoluteURL.Fragment = ""
+
 		urlStr := absoluteURL.String()
+
+		// ----- Deduplication -----
+		if _, ok := seen[urlStr]; ok {
+			return
+		}
+		seen[urlStr] = struct{}{}
+		// -------------------------
 
 		if absoluteURL.Host == baseURL.Host || absoluteURL.Host == "" {
 			stats.internal++
@@ -101,7 +113,12 @@ func getLinks(
 			req, err := http.NewRequestWithContext(reqCtx, http.MethodHead, u, nil)
 			if err != nil {
 
-				apiErr := apierror.New(apierror.ErrRequestCreation, fmt.Sprintf("failed creating request for %s: %v", u, err), targetURL)
+				apiErr := apierror.New(
+					apierror.ErrRequestCreation,
+					fmt.Sprintf("failed creating request for %s: %v", u, err),
+					targetURL,
+				)
+
 				logger.Warn("request creation failed", "url", u, "apierror", apiErr)
 
 				mu.Lock()
@@ -114,7 +131,12 @@ func getLinks(
 			resp, err := client.Do(req)
 			if err != nil {
 
-				apiErr := apierror.New(apierror.ErrRequestFailed, fmt.Sprintf("request failed for %s: %v", u, err), targetURL)
+				apiErr := apierror.New(
+					apierror.ErrRequestFailed,
+					fmt.Sprintf("request failed for %s: %v", u, err),
+					targetURL,
+				)
+
 				logger.Warn("inaccessible link", "url", u, "apierror", apiErr)
 
 				mu.Lock()
@@ -126,7 +148,12 @@ func getLinks(
 
 			if resp.StatusCode >= 400 {
 
-				apiErr := apierror.New(apierror.ErrInaccessibleLink, fmt.Sprintf("status %d for %s", resp.StatusCode, u), targetURL)
+				apiErr := apierror.New(
+					apierror.ErrInaccessibleLink,
+					fmt.Sprintf("status %d for %s", resp.StatusCode, u),
+					targetURL,
+				)
+
 				logger.Warn("inaccessible link", "url", u, "apierror", apiErr)
 
 				mu.Lock()
@@ -146,11 +173,19 @@ func getLinks(
 
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
 			logger.Error("link analysis cancelled or timed out", "error", err)
-			return nil, apierror.New(apierror.ErrRequestTimeout, "link analysis timed out or cancelled", targetURL)
+			return nil, apierror.New(
+				apierror.ErrRequestTimeout,
+				"link analysis timed out or cancelled",
+				targetURL,
+			)
 		}
 
 		logger.Error("link analysis failed", "error", err)
-		return nil, apierror.New(apierror.ErrRequestFailed, err.Error(), targetURL)
+		return nil, apierror.New(
+			apierror.ErrRequestFailed,
+			err.Error(),
+			targetURL,
+		)
 	}
 
 	logger.Info("link analysis completed",
